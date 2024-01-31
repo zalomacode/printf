@@ -21,7 +21,7 @@ int print_s(va_list val)
 	}
 	else
 	{
-		len = _strlen(s);
+		len = _strlenc(s);
 		for (i = 0; i < len; i++)
 			_putchar(s[i]);
 		return (len);
