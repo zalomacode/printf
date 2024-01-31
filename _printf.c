@@ -1,136 +1,46 @@
 #include "main.h"
-
 /**
- * _printf - our magical custom printf function,
- *  handles (d, i, b, r, R) specifiers
- * @format: the inserted format
- * Return: count
+ * _printf - is a function that selects the correct function to print.
+ * @format: identifier to look for.
+ * Return: the length of the string.
  */
-
-int _printf(const char *format, ...)
+int _printf(const char * const format, ...)
 {
-	int count = 0;
+	convert p[] = {
+		{"%s", print_s}, {"%c", print_c},
+		{"%%", print_37},
+		{"%i", print_i}, {"%d", print_d}, {"%r", print_revs},
+		{"%R", print_rot13}, {"%b", print_bin},
+		{"%u", print_unsigned},
+		{"%o", print_oct}, {"%x", print_hex}, {"%X", print_HEX},
+		{"%S", print_exc_string}, {"%p", print_pointer}
+	};
+
 	va_list args;
+	int i = 0, j, length = 0;
 
 	va_start(args, format);
-	while (*format != '\0')
+	if (format == NULL || (format[0] == '%' && format[1] == '\0'))
+		return (-1);
+
+Here:
+	while (format[i] != '\0')
 	{
-		if (*format == '%')
+		j = 13;
+		while (j >= 0)
 		{
-			switch (*(++format))
+			if (p[j].ph[0] == format[i] && p[j].ph[1] == format[i + 1])
 			{
-				case 'd':
-				case 'i':
-					count += I_handle_d_specifier(va_arg(args, int));
-					break;
-				case 'b':
-					count += I_handle_b_specifier(va_arg(args, int));
-					break;
-				case 'R':
-					count += I_handle_R_specifier(va_arg(args, char *));
-					break;
-				case 'r':
-					count += I_handle_r_specifier(va_arg(args, char *));
-					break;
-				default:
-					count += I_handle_chars_specifiers(args, format);
-					break;
+				length += p[j].function(args);
+				i = i + 2;
+				goto Here;
 			}
+			j--;
 		}
-		else
-		{
-			count += _putchar(*format);
-		}
-		format++;
+		_putchar(format[i]);
+		length++;
+		i++;
 	}
 	va_end(args);
-	return (count);
-}
-
-/**
- * I_handle_chars_specifiers - handles (c, s, %, S) specifers
- * @args: agrs
- * @format: the inserted format
- * Return: count
- */
-int I_handle_chars_specifiers(va_list args, const char *format)
-{
-	int count = 0;
-
-	switch (*format)
-	{
-		case 'c':
-			count += _putchar(va_arg(args, int));
-			break;
-		case 's':
-			count += I_handle_s_specifier(va_arg(args, char *));
-			break;
-		case '%':
-			count += _putchar(*format);
-			break;
-		case 'S':
-			count += I_handle_S_specifier(va_arg(args, char *));
-			break;
-		default:
-			count += I_handle_numbers_specifiers(args, format);
-			break;
-	}
-	return (count);
-}
-
-/**
- * I_handle_numbers_specifiers - handles (u, o, x, X) specifiers
- * @args: agrs
- * @format: the inserted format
- * Return: count
- */
-int I_handle_numbers_specifiers(va_list args, const char *format)
-{
-	int count = 0;
-
-	switch (*format)
-	{
-		case 'u':
-			count += handler_u_specifier(va_arg(args, unsigned int));
-			break;
-		case 'o':
-			count += handler_o_specifier(va_arg(args, unsigned int));
-			break;
-		case 'x':
-			count += handler_x_specifier(va_arg(args, unsigned int));
-			break;
-		case 'X':
-			count += handler_X_specifier(va_arg(args, unsigned int));
-			break;
-		default:
-		count += I_handle_pointer(args, format);
-			break;
-	}
-
-	return (count);
-}
-/**
- * I_handle_pointer - handle (p) specifier
- * @args: agrs
- * @format: the inserted format
- * Return: count
- */
-int I_handle_pointer(va_list args, const char *format)
-{
-	int count = 0;
-
-	switch (*format)
-	{
-				case 'p':
-			count += handler_p_specifier(va_arg(args, void *));
-			break;
-
-		default:
-			count += _putchar('%');
-			if (*format)
-				count += _putchar(*format);
-			break;
-	}
-
-	return (count);
+	return (length);
 }
